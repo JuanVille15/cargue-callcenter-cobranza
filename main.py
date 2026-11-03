@@ -112,7 +112,7 @@ def main():
         print(f'Error enviando oferta a Wolkvox: {e}')
         traceback.print_exc()
         respuesta_error = getattr(e, 'response', None)
-        if respuesta_error:
+        if respuesta_error is not None:
             try:
                 enviar_notificacion(response=respuesta_error, env=env)
             except Exception as notif_error:
