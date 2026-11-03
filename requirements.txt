@@ -1,0 +1,13 @@
+pandas==3.0.3
+numpy==2.3.2
+scikit-learn==1.7.1      # no lo importas, pero joblib lo necesita para cargar los .pkl
+joblib==1.5.2
+pyjanitor==0.32.23       # se importa como "janitor"
+openpyxl==3.1.5          # pandas lo usa para leer y escribir Excel
+pyarrow==24.0.0          # pandas lo usa para parquet
+python-dateutil==2.9.0.post0
+PyYAML==6.0.3
+python-dotenv==1.2.2
+requests==2.34.2
+pyodbc==5.3.0
+pywin32; sys_platform == "win32"
