@@ -1,0 +1,13 @@
+# datos y reportes
+data/
+docs/
+
+# caches y test
+__pycache__/
+
+#configuracion
+config.yaml
+
+# ambientes
+.venv313
+.env

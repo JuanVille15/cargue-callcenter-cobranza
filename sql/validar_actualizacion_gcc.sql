@@ -1,0 +1,3 @@
+SELECT 
+    MAX(TO_CHAR(FACT_FECHA_CREA, 'YYYY-MM-DD')) AS "Ultima_Fecha_Actualizacion"
+FROM STG_GCC_FACTURACION;
