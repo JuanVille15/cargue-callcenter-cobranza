@@ -1,19 +1,19 @@
 import pandas as pd
 import pyodbc
-from dotenv import dotenv_values
+import os
+
 from pathlib import Path
 from src.utils.exepciones import BodegaBiconexionError
 
 def _bi_con() -> pyodbc.Connection:
     
-    # --- Se extraen los valores del ambiente ---
-    env = dotenv_values()
-    if not env:
-        raise FileNotFoundError("No se encontró archivo .env o está vacio")
+    # --- Variable entorno: cadena de conexion BI --- #
+    
+    con_str = os.environ['CON_BI']
     
     # --- Se genera la conexión --- #
     try:
-        con = pyodbc.connect(env['CON_BI'])
+        con = pyodbc.connect(con_str)
         print(f"Conexión con BODEGA correctamente implementada")
         return con
     except Exception as e:

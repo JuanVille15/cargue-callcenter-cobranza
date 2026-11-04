@@ -7,6 +7,7 @@ __pycache__/
 
 #configuracion
 config.yaml
+local.settings.json
 
 # ambientes
 .venv313

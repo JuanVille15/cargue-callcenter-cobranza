@@ -1,7 +1,8 @@
 import sys
 import traceback
 import warnings
-from dotenv import dotenv_values
+import os
+from dotenv import load_dotenv
 from src.utils.helpers import print_step, load_config
 from src.utils.exepciones import (
     GCCconexionError, GCCdesactualizadoError,
@@ -20,8 +21,7 @@ warnings.filterwarnings('ignore')
 
 def main():
     cfg = load_config()
-    env = dotenv_values()
-    dry_run = str(env.get('WOLKVOX_DRY_RUN', 'false')).strip().lower() == 'true'
+    dry_run = str(os.environ.get('WOLKVOX_DRY_RUN', 'false')).strip().lower() == 'true'
 
     try:
         print_step('[1/7] Validando actualización DW GCC')
@@ -64,7 +64,7 @@ def main():
             print_step('PROCESO COMPLETADO ✅ — Pipeline ejecutado en dry run, no se envió notificacion')
         else:
             try:
-                enviar_notificacion(response=respuesta, env=env)
+                enviar_notificacion(response=respuesta,)
                 print_step('PROCESO COMPLETADO - Notificacion Enviada Exitosamente ✅')
             except ErrorNotificacion as e:
                 print(f'Pipeline completado, pero no se pudo enviar la notificación: {e}')
@@ -114,7 +114,7 @@ def main():
         respuesta_error = getattr(e, 'response', None)
         if respuesta_error is not None:
             try:
-                enviar_notificacion(response=respuesta_error, env=env)
+                enviar_notificacion(response=respuesta_error,)
             except Exception as notif_error:
                 print(f'Adicionalmente, no se pudo notificar por correo: {notif_error}')
         sys.exit(1)
@@ -124,4 +124,5 @@ def main():
         sys.exit(1)
 
 if __name__ == '__main__':
+    load_dotenv()
     main()

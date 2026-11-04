@@ -1,8 +1,9 @@
 import json
 import datetime
 import requests
+
+import os
 from pathlib import Path
-from dotenv import dotenv_values
 from src.utils.exepciones import ErrorEnvioOferta, ErrorExportando
 
 def _persistir_respuesta(peticion: requests.Response) -> None:
@@ -41,29 +42,11 @@ def _persistir_respuesta(peticion: requests.Response) -> None:
     except Exception as e:
         raise ErrorExportando(f'Error exportando respuesta Wolkvox: {e}') from e
 
-def _headers(env) -> dict:
-
-    """
-    Arma los headers de autenticación requeridos por la API de Wolkvox.
-
-    Parameters
-    ----------
-    env : dict
-        Variables de entorno cargadas (`dotenv_values()`), debe incluir
-        'WOLKVOX_CONTENT_TYPE' y 'WOLKVOX_TOKEN'.
-
-    Returns
-    -------
-    dict
-        Headers listos para pasar a `requests.post(headers=...)`.
-    """
-
-    HEADERS = {
-        'Content-Type': env['WOLKVOX_CONTENT_TYPE'],
-        'wolkvox-token': env['WOLKVOX_TOKEN']
+def _headers() -> dict:
+    return {
+        'Content-Type': os.environ.get('WOLKVOX_CONTENT_TYPE', 'application/json'),
+        'wolkvox-token': os.environ['WOLKVOX_TOKEN'],
     }
-
-    return HEADERS
 
 def enviar_oferta(payload: list[dict]) -> requests.Response:
 
@@ -93,11 +76,9 @@ def enviar_oferta(payload: list[dict]) -> requests.Response:
         Si falla la conexión, se agota el timeout, o Wolkvox responde
         con un status de error.
     """
-
-    env = dotenv_values()
     
-    HEADERS = _headers(env=env)
-    URL = f'{env['WOLKVOX_BASE_URL']}?api=add_record&type_campaign=preview&campaign_id={env['WOLKVOX_CAMPAIGN_ID']}'
+    HEADERS = _headers()
+    URL = f'{os.environ['WOLKVOX_BASE_URL']}?api=add_record&type_campaign=preview&campaign_id={os.environ['WOLKVOX_CAMPAIGN_ID']}'
     
     # --- Se realiza el POST y se manejan errores --- #
     

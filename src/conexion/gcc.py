@@ -1,6 +1,7 @@
 import pandas as pd
 import pyodbc
-from dotenv import dotenv_values
+import os
+
 from pathlib import Path
 from src.utils.exepciones import GCCconexionError
 
@@ -26,14 +27,12 @@ def _gcc_con() -> pyodbc.Connection:
     GCCconexionError
         Si falla el intento de conexión con las credenciales provistas.
     """
-    # --- Se extraen los valores del ambiente ---
-    env = dotenv_values()
-    if not env:
-        raise FileNotFoundError("No se encontró archivo .env o está vacio")
+    # --- Variable entorno: cadena de conexion gcc --- #
+    con_str = os.environ['GCC_CON']
     
     # --- Se genera la conexión --- #
     try:
-        con = pyodbc.connect(env['GCC_CON'])
+        con = pyodbc.connect(con_str)
         print(f"Conexión con GCC correctamente implementada")
         return con
     except Exception as e:

@@ -1,13 +1,14 @@
 import traceback
 import requests
 import datetime
+import os
 import json
 import win32com.client as win32
 from pathlib import Path
 from src.utils.exepciones import ErrorNotificacion
 
-def _destinatarios(env:dict) -> list[str]:
-    return [d.strip() for d in env.get('EMAIL_TO', '').split(',') if d.strip()]
+def _destinatarios() -> list[str]:
+    return [d.strip() for d in os.environ.get('EMAIL_TO', '').split(',') if d.strip()]
 
 def _body(response:requests.Response) -> str:
     
@@ -96,11 +97,11 @@ def _body(response:requests.Response) -> str:
         
     return cuerpo
     
-def enviar_notificacion(response:requests.Response, env:dict) -> None:
+def enviar_notificacion(response:requests.Response) -> None:
     
     # --- Generamos los destinatarios --- #
     
-    destinatarios = _destinatarios(env)
+    destinatarios = _destinatarios()
     if not destinatarios:
         print('No hay destinatarios configurados en (EMAIL_TO): Se omite Notificacion')
         return None
