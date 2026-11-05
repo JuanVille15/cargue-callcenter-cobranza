@@ -56,9 +56,9 @@ def extract_demografica(demo_path:str) -> dict[str,pd.DataFrame]:
             param = [ALTER_MONTH_QUERY]
             demografica = execute_query(demo_path, 
                                         params=param*2)
-        print(f'Demografica: {param[0]} consultada✅')
     except Exception as e:
         raise ErrorConsultadoDemografica(f'Error Consultado Vista Demografica: {e}') from e
+    print(f'Demografica: {param[0]} consultada✅')
     
     return {'Demografica': demografica}
 

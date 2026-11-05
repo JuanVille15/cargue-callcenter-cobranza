@@ -12,3 +12,8 @@ local.settings.json
 # ambientes
 .venv313
 .env
+
+#Azurite
+__blobstorage__/
+__queuestorage__/
+__azurite_db_*.json
