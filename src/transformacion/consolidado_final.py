@@ -91,7 +91,7 @@ def consolidar_ofertas(
             raise ColNecesariasError(f'Error procesando oferta: "{k}'
                                      f'\n Columnas Faltantes: {COL_FALTANTES}')
         else:
-            print(f'Oferta {k} - Correctamente Entregada✅')
+            print(f'Oferta {k} - Correctamente Entregada')
             outputs[k] = outputs[k][COL_NECESARIAS]
         
     # --- Se realiza la consolidacion -- Outer Join --- #
@@ -310,7 +310,7 @@ def build_payload(
     try:
         with open(OUTPUT_PATH / 'payload.json', 'w', encoding='utf-8') as f:
             json.dump(payload, f, ensure_ascii=False, indent=2)
-        print(f'Payload Consolidado (output) - {MONTH} exportado✅')
+        print(f'Payload Consolidado (output) - {MONTH} exportado')
     except Exception as e:
         raise ErrorExportando(f'Error exportando payload Consolidado: {e}') from e
 

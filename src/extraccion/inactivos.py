@@ -39,5 +39,5 @@ def extract_inactivos(paths: dict) -> dict[str, pd.DataFrame]:
     files = exportar(fac=None,
                      files=files, 
     )
-    print('Bases Alivio Inactivos correctamente exportadas✅')
+    print('Bases Alivio Inactivos correctamente exportadas')
     return files

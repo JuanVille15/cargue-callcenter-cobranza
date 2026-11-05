@@ -58,7 +58,7 @@ def extract_demografica(demo_path:str) -> dict[str,pd.DataFrame]:
                                         params=param*2)
     except Exception as e:
         raise ErrorConsultadoDemografica(f'Error Consultado Vista Demografica: {e}') from e
-    print(f'Demografica: {param[0]} consultada✅')
+    print(f'Demografica: {param[0]} consultada')
     
     return {'Demografica': demografica}
 
@@ -113,7 +113,7 @@ def extract_perfil(perfil_path:str) -> dict[str,pd.DataFrame]:
             param = [ALTER_MONTH_QUERY]
             perfil = execute_query(perfil_path, 
                                         params=param)
-        print(f'Perfil Vinculación: {param[0]} consultada✅')
+        print(f'Perfil Vinculación: {param[0]} consultada')
     except Exception as e:
         raise ErrorConsultadoPerfil(f'Error Consultando Perfil vinculación: {e}') from e
     
@@ -171,7 +171,7 @@ def extract_vista360(vista_path:str) -> dict[str, pd.DataFrame]:
             param = [ALTER_MONTH_QUERY]
             vista_360 = execute_query(vista_path, 
                                         params=param*2)
-        print(f'Vista 360: {param[0]} consultada✅')
+        print(f'Vista 360: {param[0]} consultada')
     except Exception as e:
         raise ErrorConsultadoVista360(f'Error consultando vista 360: {e}') from e
 
@@ -198,7 +198,7 @@ def extract_r10(r10_sql_path:str) -> dict[str,pd.DataFrame]:
     """
     print("\nExtrayendo poblacion r10")
     r10 = execute_query_gcc(query=r10_sql_path)
-    print("R10 consultada✅")
+    print("R10 consultada")
 
     return {'r10': r10}
 

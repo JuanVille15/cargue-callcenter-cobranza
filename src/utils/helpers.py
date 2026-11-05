@@ -104,7 +104,7 @@ def extract_files(configs:dict[str,dict]) -> dict[str,pd.DataFrame]:
         except Exception as e:
             print(f"Error Extrayendo: {nombre} - {e}")
             raise
-        print(f"{nombre}: Consultado✅ ({ruta.name})")
+        print(f"{nombre}: Consultado ({ruta.name})")
 
     return files
 

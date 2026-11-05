@@ -350,7 +350,7 @@ def build_final_base(base_final:pd.DataFrame) -> pd.DataFrame:
     NO_INACTIVOS = (base_final['ESTADO_COOMEVA_HOY'] != 'Inactivo').sum()
 
     if NO_INACTIVOS > 0:
-        print(f'Hay {NO_INACTIVOS} asociados no Inactivos⚠️'
+        print(f'Hay {NO_INACTIVOS} asociados no Inactivos'
             '\nEliminando de la oferta inicial...')
 
     base_final = (

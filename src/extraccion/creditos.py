@@ -70,6 +70,6 @@ def extract_creditos(creditos_query:str,
     # --- 3. cargamos into raw --- #
     files = exportar(fac=None,
                      files=files)
-    print("Bases Alivio Creditos Exportadas✅")
+    print("Bases Alivio Creditos Exportadas")
 
     return files

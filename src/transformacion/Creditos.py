@@ -523,7 +523,7 @@ def calcular_alivio_financiero(asignacion:pd.DataFrame) -> pd.DataFrame:
     try:
         with pd.ExcelWriter(f'{PROCESSED_PATH}/{MONTH}.xlsx', engine='openpyxl') as file:
             asignacion.to_excel(file, index=False)
-        print(f'Archivo Creditos (processed) - {MONTH}.xlsx creado✅')
+        print(f'Archivo Creditos (processed) - {MONTH}.xlsx creado')
     except Exception as e:
         raise ErrorExportando(f'Error exportando processed Creditos: {e}') from e
 
@@ -609,7 +609,7 @@ def aplicar_ranking_unico(asignacion:pd.DataFrame) -> dict[str,pd.DataFrame]:
             OUTPUT_PATH / 'base_oferta_creditos.xlsx',
             index=False,
         )
-        print(f'Base oferta Creditos (output) - {MONTH} exportada✅')
+        print(f'Base oferta Creditos (output) - {MONTH} exportada')
     except Exception as e:
         raise ErrorExportando(f'Error exportando output Creditos: {e}') from e
 

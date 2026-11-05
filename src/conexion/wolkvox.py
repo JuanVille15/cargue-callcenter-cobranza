@@ -38,7 +38,7 @@ def _persistir_respuesta(peticion: requests.Response) -> None:
     try:
         with open(OUTPUT_PATH / 'response.json', 'w', encoding='utf-8') as f:
             json.dump(cuerpo, f, ensure_ascii=False, indent=2)
-        print(f'Respuesta Wolkvox (output) - {MONTH} exportada✅')
+        print(f'Respuesta Wolkvox (output) - {MONTH} exportada')
     except Exception as e:
         raise ErrorExportando(f'Error exportando respuesta Wolkvox: {e}') from e
 
@@ -108,7 +108,7 @@ def enviar_oferta(payload: list[dict]) -> requests.Response:
     except requests.exceptions.RequestException as e:
         raise ErrorEnvioOferta(f'Error inesperado enviando la oferta a Wolkvox: {e}') from e
 
-    print(f'Oferta enviada a Wolkvox✅ — status {peticion.status_code}')
+    print(f'Oferta enviada a Wolkvox — status {peticion.status_code}')
     
     try:
         _persistir_respuesta(peticion=peticion)

@@ -71,6 +71,6 @@ def extract_MT(Factura_MT_query:str,
     # --- 3. cargamos into raw --- #
     files = exportar(fac=fac,
                      files= files)
-    print("Bases Alivio Moras Tempranas Exportadas✅")
+    print("Bases Alivio Moras Tempranas Exportadas")
 
     return files

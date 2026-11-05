@@ -42,30 +42,30 @@ def main():
         
         print_step('[3/7] Pipeline Moras Tempranas')
         outputs.update(Moras.run_moras(cfg=cfg, common_files=common_files))
-        print_step(f'PROCESO COMPLETADO ✅ — Oferta MT: {len(outputs['Moras'])} asociados')
+        print_step(f'PROCESO COMPLETADO — Oferta MT: {len(outputs['Moras'])} asociados')
         
         print_step('[4/7] Pipeline Inactivos')
         outputs.update(Inactivos.run_inactivos(cfg=cfg, common_files=common_files))
-        print_step(f'PROCESO COMPLETADO ✅ — Oferta INACTIVOS: {len(outputs['Inactivos'])} asociados')
+        print_step(f'PROCESO COMPLETADO — Oferta INACTIVOS: {len(outputs['Inactivos'])} asociados')
         
         print_step('[5/7] Pipeline Creditos')
         outputs.update(Creditos.run_creditos(cfg=cfg, common_files=common_files))
-        print_step(f'PROCESO COMPLETADO ✅ — Oferta CREDITOS: {len(outputs['Creditos'])} asociados')
+        print_step(f'PROCESO COMPLETADO — Oferta CREDITOS: {len(outputs['Creditos'])} asociados')
         
         print_step('[6/7] Consolidando, armando payload y enviando a Wolkvox')
         respuesta = Post.run_post(outputs=outputs, cfg=cfg, dry_run=dry_run)
         if respuesta is None:
-            print_step('PROCESO COMPLETADO ✅ — Payload generado (dry run), no se envió')
+            print_step('PROCESO COMPLETADO — Payload generado (dry run), no se envió')
         else:
-            print_step(f'PROCESO COMPLETADO ✅ — Oferta enviada a Wolkvox: status {respuesta.status_code}')
+            print_step(f'PROCESO COMPLETADO — Oferta enviada a Wolkvox: status {respuesta.status_code}')
             
         print_step('[7/7] Enviando Notificacion Insercion...')
         if respuesta is None:
-            print_step('PROCESO COMPLETADO ✅ — Pipeline ejecutado en dry run, no se envió notificacion')
+            print_step('PROCESO COMPLETADO — Pipeline ejecutado en dry run, no se envió notificacion')
         else:
             try:
                 enviar_notificacion(response=respuesta,)
-                print_step('PROCESO COMPLETADO - Notificacion Enviada Exitosamente ✅')
+                print_step('PROCESO COMPLETADO - Notificacion Enviada Exitosamente')
             except ErrorNotificacion as e:
                 print(f'Pipeline completado, pero no se pudo enviar la notificación: {e}')
                 traceback.print_exc()

@@ -86,7 +86,7 @@ def predict(x_feature:pd.DataFrame,
             name= 'Prediccion'
         )
     
-    print(f'Predicción realizada✅\n'
+    print(f'Predicción realizada\n'
       f'Oferta: {(etiquetas == 1).sum()}\n'
       f'Descartadas: {(etiquetas == 0).sum()}')
     
@@ -322,7 +322,7 @@ def export(df_scored:pd.DataFrame,
                     sheet_name='Summary', 
                 )
             )
-        print(f'Predicciones Exportadas✅')
+        print(f'Predicciones Exportadas')
         
         ### --- Se exporta la base de ofrecimiento --- ###
         print(f'Exportando base ofrecimiento: {PERIOD}')
@@ -331,7 +331,7 @@ def export(df_scored:pd.DataFrame,
             excel_writer=OFRECIMIENTO_PATH, 
             index=False, 
         )
-        print(f'Base ofrecimiento Exportada✅')
+        print(f'Base ofrecimiento Exportada')
         
     except Exception as e:
         raise ErrorExportando(f'Error escribiendo archivos: {e}') from e
@@ -365,7 +365,7 @@ def export(df_scored:pd.DataFrame,
                 excel_writer=OFRECIMIENTO_PATH, 
                 index=False, 
             )
-            print(f'Base ofrecimiento Exportada✅')
+            print(f'Base ofrecimiento Exportada')
         except Exception as e:
             raise ErrorExportando(f'Error escribiendo archivos: {e}') from e
         
