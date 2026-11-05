@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import datetime
 import os
 from pathlib import Path
@@ -13,7 +12,7 @@ def print_step(mensaje: str) -> None:
     
 def load_config() -> dict:
     
-    config_path = os.path.join(Path(__file__).parents[2],'config','config.yaml')
+    config_path = os.path.join(Path.cwd(),'config','config.yaml')
     
     if  not Path(config_path).exists():
         raise FileNotFoundError(f"Archivo de configuración no encontrado: {config_path}")
@@ -54,6 +53,23 @@ def _archivo_mas_reciente(directorio:str|Path,
         raise FileNotFoundError(f"No se encontraron archivos '{patron}' en {directorio}")
 
     return max(archivos, key=lambda f: f.stat().st_mtime)
+
+def _carpeta_mas_reciente(directorio:str|Path) -> str:
+    
+    """ Busca la carpeta mas recien dentro de un directorio dado.
+    Por fecha de creacion, y retorna el nombre de la carpeta."""
+    
+    directorio = Path(directorio)
+    
+    if not directorio.is_dir():
+        raise NotADirectoryError(f"{directorio} no es un directorio válido.")
+
+    carpetas = [d for d in directorio.iterdir() if d.is_dir()]
+    
+    if not carpetas:
+        raise FileNotFoundError(f"No se encontraron carpetas en {directorio}")
+    
+    return max(carpetas, key=lambda d: d.stat().st_birthtime).name
 
 def extract_files(configs:dict[str,dict]) -> dict[str,pd.DataFrame]:
 
@@ -98,9 +114,14 @@ def extract_files(configs:dict[str,dict]) -> dict[str,pd.DataFrame]:
         try:
             ruta = Path(cfg['ruta'])
             if ruta.is_dir():
-                ruta = _archivo_mas_reciente(ruta, cfg.get('patron', '*.xlsx'))
+                if nombre == 'scoring':
+                    # --- Si es scoring, buscamos la carpeta mas reciente --- #
+                    carpeta_reciente = _carpeta_mas_reciente(ruta)
+                    ruta = ruta / carpeta_reciente
+                
+                file_path = _archivo_mas_reciente(ruta, cfg.get('patron', '*.xlsx'))
 
-            files[nombre] = pd.read_excel(ruta, sheet_name=cfg.get('hoja') or 0)
+            files[nombre] = pd.read_excel(file_path, sheet_name=cfg.get('hoja') or 0)
             print(f"{nombre}: Consultado✅ ({ruta.name})")
         except Exception as e:
             print(f"Error Extrayendo: {nombre} - {e}")
