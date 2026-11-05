@@ -119,9 +119,9 @@ def extract_files(configs:dict[str,dict]) -> dict[str,pd.DataFrame]:
                     carpeta_reciente = _carpeta_mas_reciente(ruta)
                     ruta = ruta / carpeta_reciente
                 
-                file_path = _archivo_mas_reciente(ruta, cfg.get('patron', '*.xlsx'))
+                ruta = _archivo_mas_reciente(ruta, cfg.get('patron', '*.xlsx'))
 
-            files[nombre] = pd.read_excel(file_path, sheet_name=cfg.get('hoja') or 0)
+            files[nombre] = pd.read_excel(ruta, sheet_name=cfg.get('hoja') or 0)
             print(f"{nombre}: Consultado✅ ({ruta.name})")
         except Exception as e:
             print(f"Error Extrayendo: {nombre} - {e}")
