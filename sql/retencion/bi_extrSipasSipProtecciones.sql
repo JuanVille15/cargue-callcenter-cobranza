@@ -1,0 +1,11 @@
+SELECT [PROD_CODIGO]
+      ,[ASO_NUMINT]
+      ,[PRO_ESTADO]
+      ,[PRO_COD]
+      ,[PRO_FECHA_REG]
+      ,[PRO_CUOTA_ACUMULADA]
+      ,[PRO_PROTECCION_ACUMULADA]
+      ,[PRO_FECHA_PERSEVERANCIA]
+      ,[PRO_OBSERVACION]
+  FROM [StageCorporativa].[Stage].[extrSipasSipProtecciones]
+  where prod_codigo IN (177,178,179)
