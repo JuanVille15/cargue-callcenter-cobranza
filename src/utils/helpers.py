@@ -22,6 +22,15 @@ def load_config() -> dict:
 
     return config
 
+def load_yaml(ruta: Path | str) -> dict:
+    
+    ruta = Path(ruta)
+    if not ruta.exists():
+        raise FileNotFoundError(f"Archivo YAML no encontrado: {ruta}")
+    
+    with open(ruta, 'r', encoding='utf-8') as file:
+        return yaml.safe_load(file)
+
 def _archivo_mas_reciente(directorio:str|Path,
                           patron:str = '*.xlsx') -> Path:
 
