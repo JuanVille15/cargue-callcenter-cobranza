@@ -2,3 +2,5 @@ __blobstorage__/
 __queuestorage__/
 __azurite_db_*.json
 local.settings.json
+
+.venv313

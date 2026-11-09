@@ -8,6 +8,8 @@ __pycache__/
 #configuracion
 config.yaml
 local.settings.json
+.vscode
+insumos_locales.yaml
 
 # ambientes
 .venv313
@@ -17,3 +19,4 @@ local.settings.json
 __blobstorage__/
 __queuestorage__/
 __azurite_db_*.json
+.python_packages
