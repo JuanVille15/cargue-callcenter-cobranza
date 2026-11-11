@@ -1,6 +1,19 @@
 import pandas as pd
 from src.conexion.gcc import execute_query
 from src.utils.helpers import exportar, extract_files
+from src.conexion.blob import leer_fuente
+
+COLUMNAS_FAC = [
+'ASO_IDENTIFICACION', 'CON_CODIGO', 'FACT_VALOR_VENCIDO'
+]
+
+def extract_fac_blob(fecha: str, conceptos: list[str]) -> pd.DataFrame:
+    """Equivalente a facturaMT.sql, leyendo del lake. Solo las columnas que usa create_fac_base."""
+    return leer_fuente(
+        "STG_GCC_FACTURACION", fecha,
+        columnas=COLUMNAS_FAC,
+        filtro=lambda b: b[b["CON_CODIGO"].isin(conceptos)],
+    )
 
 def extract_fac(Factura_MT_query:str) -> pd.DataFrame:
 
@@ -29,48 +42,20 @@ def extract_fac(Factura_MT_query:str) -> pd.DataFrame:
 
     return fac
 
-def extract_MT(Factura_MT_query:str,
-               paths:dict) -> dict[str,pd.DataFrame]:
-
+def extract_MT(cfg: dict, fecha: str) -> dict[str, pd.DataFrame]:
     """
-    Orquesta el proceso completo de extracción de insumos para Moras Tempranas.
-
-    Ejecuta en secuencia:
-        1. Extracción de la facturación desde el DWH GCC.
-        2. Lectura de archivos Excel desde rutas locales.
-        3. Persistencia de todos los insumos en `data/raw/YYYYMM/`.
-
-    La población R10 no se extrae acá: ya viene resuelta en `common_files`
-    (ver `extract_commons`), donde se pide una sola vez y se comparte entre
-    los pipelines que la necesitan.
-
-    Además de escribir a disco, retorna el diccionario consolidado de DataFrames
-    para que la siguiente etapa del pipeline (transformación) opere en memoria
-    sin necesidad de releer los archivos.
-
-    Parameters
-    ----------
-    Factura_MT_query : str
-        Ruta o contenido de la consulta SQL para extraer la facturación estatutaria.
-    paths : dict
-        Diccionario con los nombres y rutas de los archivos Excel a procesar.
-
-    Returns
-    -------
-    dict[str, pd.DataFrame]
-        Diccionario con todos los insumos del proceso indexados por nombre,
-        incluyendo 'fac' además de los archivos locales.
+    Insumos de Moras Tempranas. Devuelve siempre las mismas claves
+    ('fac', 'perseverados') sin importar el origen.
     """
+    if cfg["origen"] == "blob":
+        fac = extract_fac_blob(fecha, cfg["params"]["conceptos_mt"])
+        files = {
+            "perseverados": leer_fuente("PERSEVERADOS", fecha, columnas=["Identificacion"]),
+        }
+    else:
+        fac = extract_fac(cfg["queries"]["factura_mt"])
+        files = extract_files(configs=cfg["paths_mt"])
+        files = exportar(fac=fac, files=files)
 
-    # --- 1. Extraemos la factura desde SQL --- #
-    fac = extract_fac(Factura_MT_query=Factura_MT_query)
-
-    # --- 2. Extraemos archivos directos --- #
-    files = extract_files(configs=paths)
-
-    # --- 3. cargamos into raw --- #
-    files = exportar(fac=fac,
-                     files= files)
-    print("Bases Alivio Moras Tempranas Exportadas")
-
+    files["fac"] = fac
     return files
