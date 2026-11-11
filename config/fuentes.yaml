@@ -1,0 +1,239 @@
+# Catálogo de insumos en el lake.
+# - Claves y nombres de archivo en MAYÚSCULAS. El archivo debe coincidir EXACTAMENTE
+#   con el contrato con BI (Blob Storage distingue mayúsculas de minúsculas).
+# - Los nombres de COLUMNA van tal cual vienen en el archivo (no se normalizan).
+# - columnas: null   -> se leen todas.
+# - requerido: false -> validar_insumos no exige el archivo.
+# - Tipos permitidos en dtype: Int64, float64, string, category, boolean.
+#   Las fechas no van en dtype: van en "fechas".
+# - Cédulas y pagarés: Int64 en TODAS las fuentes (mismo tipo para los cruces).
+
+prefijo: "alivio/ingesta/fecha={fecha}"
+
+fuentes:
+
+  # ---------------- GCC ----------------
+
+  GCC_REPORTE10:
+    archivo: GCC_REPORTE10.csv
+    columnas: null
+    dtype:
+      NumPeriodo: Int64
+      CEDULA_ASOCIADO: Int64
+      NOMBRE_ASOCIADO: string
+      TIPO_CLIENTE: string
+      EDAD_CARTERA_INICIAL: Int64
+      EDAD_CARTERA_HOY: Int64
+      ESTADO_COOMEVA_HOY: string
+      ANTIGUEDAD_DEL_ASOCIADO_EN_COOMEVA: Int64
+      NO_CUOTAS_CANCELADAS: Int64
+      SUBCAMPANA: string
+
+  STG_GCC_FACTURACION:
+    archivo: STG_GCC_FACTURACION.csv
+    columnas:
+      # Moras
+      - ASO_IDENTIFICACION
+      - CON_CODIGO
+      - FACT_INTERES_MORA_DIA
+      - FACT_VALOR_CUOTA_MES
+      - FACT_NUMERO_CUOTAS_ATRASADAS
+      - FACT_NUMERO_PAGARE
+      - COR_NUMERO_CORTE
+      - FACT_VALOR_CUENTA_COBRAR
+      - FACT_INTERES_MORA_CORTE
+      - FACT_DIAS_DE_MORA
+      - FACT_CUOTA_PAGADA
+      - FACT_CUOTAS_PACTADAS
+      - FACT_FECHA_CREA
+    dtype:
+      ASO_IDENTIFICACION: Int64
+      CON_CODIGO: string
+      FACT_INTERES_MORA_DIA: float64
+      FACT_VALOR_CUOTA_MES: float64
+      FACT_NUMERO_CUOTAS_ATRASADAS: Int64
+      FACT_NUMERO_PAGARE: Int64
+      COR_NUMERO_CORTE: Int64
+      FACT_VALOR_CUENTA_COBRAR: float64
+      FACT_INTERES_MORA_CORTE: float64
+      FACT_DIAS_DE_MORA: Int64
+      FACT_CUOTA_PAGADA: Int64
+      FACT_CUOTAS_PACTADAS: Int64
+    fechas: [FACT_FECHA_CREA]
+
+  GCC_ASOCIADO:
+    archivo: GCC_ASOCIADO.csv
+    columnas:
+      - ASO_IDENTIFICACION
+      - ASO_PRIMER_NOMBRE
+      - ASO_SEGUNDO_NOMBRE
+      - ASO_PRIMER_APELLIDO
+      - ASO_SEGUNDO_APELLIDO
+      - COR_NUMERO_CORTE
+      - VINC_CODIGO
+      - ESTM_CODIGO
+      - ASO_SUBCAMPANNA_ASIGNADA
+      - ASO_FECHA_CAMBIO_ESTADO_MULT
+    dtype:
+      ASO_IDENTIFICACION: Int64
+      ASO_PRIMER_NOMBRE: string
+      ASO_SEGUNDO_NOMBRE: string
+      ASO_PRIMER_APELLIDO: string
+      ASO_SEGUNDO_APELLIDO: string
+      COR_NUMERO_CORTE: Int64
+      VINC_CODIGO: Int64
+      ESTM_CODIGO: Int64
+      ASO_SUBCAMPANNA_ASIGNADA: string
+    fechas: [ASO_FECHA_CAMBIO_ESTADO_MULT]
+
+  STG_GCC_SAC_INFOOBL:
+    archivo: STG_GCC_SAC_INFOOBL.csv
+    columnas:
+      - PERIODO
+      - ASO_IDENTIFICACION
+      - PAGARE
+      - LINEA_CREDITO
+      - PRODUCTO
+      - SALDO_TOTAL
+      - CAPITAL_VENCIDO
+      - CAPITAL_X_VENCER
+      - VALOR_CUOTAS_MORA
+      - SALDO_CAPITAL
+      - ESTADO_CREDITO
+      - FEC_ACTUALIZACION
+      - FEC_APERTURA
+      - FEC_VENCIMIENTO
+      - TASA_INICIAL
+    dtype:
+      PERIODO: Int64
+      ASO_IDENTIFICACION: Int64
+      PAGARE: Int64
+      LINEA_CREDITO: string
+      PRODUCTO: string
+      SALDO_TOTAL: float64
+      CAPITAL_VENCIDO: float64
+      CAPITAL_X_VENCER: float64
+      VALOR_CUOTAS_MORA: float64
+      SALDO_CAPITAL: float64
+      ESTADO_CREDITO: string
+      TASA_INICIAL: float64
+    fechas: [FEC_ACTUALIZACION, FEC_APERTURA, FEC_VENCIMIENTO]
+
+  GCC_ESTADOS_MULTIACTIVA:
+    archivo: GCC_ESTADOS_MULTIACTIVA.csv
+    columnas: null
+    dtype:
+      ESTM_CODIGO: Int64
+      ESTM_NOMBRE: string
+    requerido: True
+
+  GCC_HIST_ALTERNATIVAS:
+    archivo: GCC_HIST_ALTERNATIVAS.csv
+    columnas:
+      - ASO_IDENTIFICACION
+      - FECHA_APLICACION
+      - ALTERNATIVA
+      - GCC_TIPO_ALFABETICO
+      - PROCESO_ORIGEN
+    dtype:
+      ASO_IDENTIFICACION: Int64
+      ALTERNATIVA: string
+      GCC_TIPO_ALFABETICO: string
+      PROCESO_ORIGEN: string
+    fechas: [FECHA_APLICACION]
+
+  GCC_CORTE_FACTURACION:
+    archivo: GCC_CORTE_FACTURACION.csv
+    requerido: false
+
+  GCC_CONCEPTO:
+    archivo: GCC_CONCEPTO.csv
+    requerido: false
+
+  # ---------------- Bodega BI ----------------
+
+  V_DEMOGRAFICA:
+    archivo: V_DEMOGRAFICA.csv
+    columnas:
+      - strIdentificacion
+      - Estrato
+      - Ingresos
+      - Saldoaportes
+      - Antiguedad
+      - suma_productos
+    dtype:
+      strIdentificacion: Int64
+      Ingresos: float64
+      Saldoaportes: float64
+      suma_productos: Int64
+
+  CONSULTAINTEGRAL360:
+    archivo: CONSULTAINTEGRAL360.csv
+    columnas:
+      - strIdentificacion
+      - Fecha
+      - Edad
+      - Segmento
+      - ValorPerseverancia
+      - "Tipo Vinculacion"
+      - ReservaMatematica
+      - Rango_Score
+      - Estrato
+      - SaldoAportes
+      - numValorIngresos
+      - "Antiguedad Actual (Años)"
+      - numCantidadProductos
+      - "Puntaje Acierta"
+    dtype:
+      strIdentificacion: Int64
+      Edad: Int64
+      Segmento: category
+      ValorPerseverancia: float64
+      "Tipo Vinculacion": category
+      ReservaMatematica: float64
+      Rango_Score: category
+      SaldoAportes: float64
+      numValorIngresos: float64
+      numCantidadProductos: Int64
+      "Puntaje Acierta": float64
+    fechas: [Fecha]
+
+  V_SEGMENTOSPERFILESTRATEGICO:
+    archivo: V_SEGMENTOSPERFILESTRATEGICO.csv
+    columnas: [strIdentificacion, strPerfil, strAgrupacionPerfil, dtmFechaInsercion]
+    dtype:
+      strIdentificacion: Int64
+      strPerfil: category
+      strAgrupacionPerfil: category
+    fechas: [dtmFechaInsercion]
+
+  FACTASOCIATIVIDAD:
+    archivo: FACTASOCIATIVIDAD.csv
+    columnas: [ID, strcodestadoclientefuente]
+    dtype:
+      ID: Int64
+      strcodestadoclientefuente: category
+
+  # ---------------- Archivos planos ----------------
+
+  CONSOL_INACTIVOS:
+    archivo: CONSOL_INACTIVOS.csv
+    columnas: [Cedula, "Mes Reactivación", FECHA_INSERCION]
+    dtype:
+      Cedula: Int64
+    fechas: [FECHA_INSERCION]
+
+  SCORING:
+    archivo: SCORING.csv
+    columnas: [Id, categoria_score, FECHA_INSERCION]
+    dtype:
+      Id: Int64
+      categoria_score: string
+    fechas: [FECHA_INSERCION]
+
+  PERSEVERADOS:
+    archivo: PERSEVERADOS.csv
+    columnas: [Identificacion, FECHA_INSERCION]
+    dtype:
+      Identificacion: Int64
+    fechas: [FECHA_INSERCION]
