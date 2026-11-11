@@ -57,3 +57,15 @@ class ErrorEnvioOferta(Exception):
 class ErrorNotificacion(Exception):
     "Ocurrio un error enviando la notificacion por correo"
     pass
+
+class CatalogoInvalidoError(Exception):
+    "Ocurrio un error con el catalogo de fuente"
+    pass
+
+class InsumoNoEncontradoError(Exception):
+    "No se encuentra un insumo solicitado"
+    pass
+
+class InsumosIncompletosError(Exception):
+    "El insumo no tiene todos los campos"
+    pass

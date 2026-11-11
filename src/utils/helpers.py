@@ -130,7 +130,10 @@ def extract_files(configs:dict[str,dict]) -> dict[str,pd.DataFrame]:
                 
                 ruta = _archivo_mas_reciente(ruta, cfg.get('patron', '*.xlsx'))
 
-            files[nombre] = pd.read_excel(ruta, sheet_name=cfg.get('hoja') or 0)
+            files[nombre] = (
+                pd.read_excel(ruta, sheet_name=cfg.get('hoja') or 0)
+                .assign(FECHA_INSERCION = datetime.date.today().strftime("%Y-%m-%d"))
+            )
         except Exception as e:
             print(f"Error Extrayendo: {nombre} - {e}")
             raise
