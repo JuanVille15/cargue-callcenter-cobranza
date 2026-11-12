@@ -1,10 +1,27 @@
 import pandas as pd
 import datetime
+
+from dotenv import load_dotenv
 from dateutil.relativedelta import relativedelta
+from src.utils.helpers import load_config
 from src.conexion.bodega import execute_query
 from src.conexion.gcc import execute_query as execute_query_gcc
+from src.conexion.blob import leer_fuente
 from src.utils.exepciones import ErrorConsultadoDemografica,ErrorConsultadoPerfil,ErrorConsultadoVista360
 from src.utils.helpers import exportar, extract_files
+
+def extract_common_blob(
+    fecha: str,
+    cfg: dict
+) -> dict[str, pd.DataFrame]:
+
+    files = {}
+    
+    for name, spec in cfg["comunes_blob"].items():
+        df = leer_fuente(fuente=spec["fuente"], fecha=fecha)
+        files[name] = df.rename(columns=spec.get("renombrar", {}), errors="raise")
+    
+    return files
 
 def extract_demografica(demo_path:str) -> dict[str,pd.DataFrame]:
     
