@@ -11,7 +11,7 @@ from src.Model.Mt.build_df import (
 )
 from src.Model.inferencia import predict, build_output, export
 
-def run_moras(cfg: dict, common_files: dict) -> dict[str,pd.DataFrame]:
+def run_moras(cfg: dict, common_files: dict, fecha: str) -> dict[str,pd.DataFrame]:
 
     """
     Orquesta el pipeline completo de Moras Tempranas: extracción, cruce
@@ -40,13 +40,9 @@ def run_moras(cfg: dict, common_files: dict) -> dict[str,pd.DataFrame]:
         (asociados con Prediccion == 1), lista para consolidar con los
         otros procesos.
     """
-
     print('  → Extrayendo archivos MT...')
-    files = extract_MT(
-        Factura_MT_query=cfg['queries']['factura_mt'],
-        paths=cfg['paths_mt'],
-    )
-
+    files = extract_MT(cfg, fecha)
+    
     print('  → Filtrando y cruzando población R10...')
     r10 = filtrar_r10(common_files['r10'])
     r10 = cruzar_poblacion(r10, filtrar_aliviosp(common_files['alivio_sp']))
