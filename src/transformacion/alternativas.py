@@ -86,3 +86,11 @@ def tabla_exclusiones(
     _registrar_resumen(tabla)
     
     return tabla
+
+def cedulas_excluidas(
+    exclusiones: pd.DataFrame,
+    motivo: list[str],
+) -> pd.Series:
+    
+    """Cédulas únicas con al menos uno de los `motivos` (para un anti-join con isin)."""
+    return exclusiones.loc[exclusiones["MOTIVO"].isin(motivo), 'CEDULA'].drop_duplicates()
