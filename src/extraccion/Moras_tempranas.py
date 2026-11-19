@@ -48,10 +48,8 @@ def extract_MT(cfg: dict, fecha: str) -> dict[str, pd.DataFrame]:
     ('fac', 'perseverados') sin importar el origen.
     """
     if cfg["origen"] == "blob":
+        files = {}
         fac = extract_fac_blob(fecha, cfg["params"]["conceptos_mt"])
-        files = {
-            "perseverados": leer_fuente("PERSEVERADOS", fecha, columnas=["Identificacion"]),
-        }
     else:
         fac = extract_fac(cfg["queries"]["factura_mt"])
         files = extract_files(configs=cfg["paths_mt"])
