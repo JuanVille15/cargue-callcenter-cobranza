@@ -179,7 +179,7 @@ def cantidad_reactivaciones(consol_inactivos:pd.DataFrame,
         alivio
         .merge(
             agr_reactivaciones
-            .assign(Cedula = lambda df: df['Cedula'].astype('int64')), 
+            .assign(Cedula = lambda df: df['Cedula'].astype('Int64')), 
             how='left', 
             left_on='ASO_IDENTIFICACION', 
             right_on='Cedula'
