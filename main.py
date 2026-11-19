@@ -2,6 +2,9 @@ import sys
 import traceback
 import warnings
 import os
+
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 from src.utils.helpers import print_step, load_config
 from src.utils.exepciones import (
@@ -14,16 +17,26 @@ from src.utils.exepciones import (
 )
 from src.utils.notificacion import enviar_notificacion
 from src.utils.validation import val_gcc_actualizado
-from src.extraccion.commons import extract_commons
+from src.extraccion.commons import extract_commons, extract_common_blob
+from src.transformacion.alternativas import tabla_exclusiones, alternativas_vigentes
 from src.pipelines import Moras, Inactivos, Creditos, Post
 
 warnings.filterwarnings('ignore')
 
-def main():
+def main(fecha: str | None = None) -> None:
     cfg = load_config()
     dry_run = str(os.environ.get('WOLKVOX_DRY_RUN', 'false')).strip().lower() == 'true'
-
+    fecha = fecha or datetime.now(ZoneInfo("America/Bogota")).strftime("%Y-%m-%d")
+    
     try:
+        if cfg["origen"] == "blob":
+            print_step('[1/7] Extrayendo bases comunes')
+            common_files = extract_common_blob(fecha=fecha, cfg=cfg)
+            
+            print_step('[2/7] Creando base de exclusiones')
+            vigentes= alternativas_vigentes(common_files["hist_alternativas"], cfg["params"]["procesos_alternativas"])
+            common_files["exclusiones"] = tabla_exclusiones(vigentes=vigentes, perseverados=common_files["perseverados"])
+
         print_step('[1/7] Validando actualización DW GCC')
         val_gcc_actualizado(cfg['queries']['validacion_actualizacion'])
 
@@ -41,7 +54,7 @@ def main():
         outputs = {}
         
         print_step('[3/7] Pipeline Moras Tempranas')
-        outputs.update(Moras.run_moras(cfg=cfg, common_files=common_files))
+        outputs.update(Moras.run_moras(cfg=cfg, common_files=common_files, fecha=fecha))
         print_step(f'PROCESO COMPLETADO — Oferta MT: {len(outputs['Moras'])} asociados')
         
         print_step('[4/7] Pipeline Inactivos')
@@ -125,4 +138,4 @@ def main():
 
 if __name__ == '__main__':
     load_dotenv()
-    main()
+    main(sys.argv[1] if len(sys.argv) > 1 else None)
