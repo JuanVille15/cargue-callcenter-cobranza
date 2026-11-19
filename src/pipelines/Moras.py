@@ -1,15 +1,18 @@
 import pandas as pd
+import logging
 from src.extraccion.Moras_tempranas import extract_MT
 from src.transformacion.Moras_tempranas import (
-    filtrar_r10, filtrar_aliviosp, filter_aliviofinanciero,
-    filter_perseverados, cruzar_poblacion, create_fac_base,
-    create_final_base, filter_acr,
+    filtrar_r10,create_fac_base,
+    create_final_base,
 )
 from src.Model.Mt.build_df import (
     build_ini_base, demo_columns, cantidad_reactivaciones,
     perfil_asociado, final_matrix,
 )
 from src.Model.inferencia import predict, build_output, export
+from src.transformacion.alternativas import cedulas_excluidas
+
+logger = logging.getLogger(__name__)
 
 def run_moras(cfg: dict, common_files: dict, fecha: str) -> dict[str,pd.DataFrame]:
 
@@ -45,10 +48,10 @@ def run_moras(cfg: dict, common_files: dict, fecha: str) -> dict[str,pd.DataFram
     
     print('  → Filtrando y cruzando población R10...')
     r10 = filtrar_r10(common_files['r10'])
-    r10 = cruzar_poblacion(r10, filtrar_aliviosp(common_files['alivio_sp']))
-    r10 = cruzar_poblacion(r10, filter_aliviofinanciero(common_files['alivio']))
-    r10 = cruzar_poblacion(r10, filter_acr(files['acr']))
-    r10 = cruzar_poblacion(r10, filter_perseverados(files['perseverados']))
+    excluidas = cedulas_excluidas(common_files["exclusiones"], cfg["exclusiones"]["moras"])
+    antes = len(r10)
+    r10 = r10.loc[~r10["CEDULA_ASOCIADO"].isin(excluidas)]
+    logger.info("Moras: %d excluidos por alivios previos (%d -> %d)", antes - len(r10), antes, len(r10))
     tbl_factura = create_fac_base(r10, files['fac'])
     tbl_factura = create_final_base(tbl_factura, cfg['columnas']['alivio_mt'])
 
