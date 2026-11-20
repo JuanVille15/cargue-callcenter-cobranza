@@ -87,11 +87,11 @@ def ruta_blob(fuente: str, fecha: str) -> str:
 # CATALOGO
 # ===============================
 
-@lru_cache(maxsize=1)
-def contenedor() -> ContainerClient:
-    """Cliente del contenedor de datos. Se crea una vez por proceso."""
+@lru_cache(maxsize=None)
+def contenedor(capa: str = "bronze") -> ContainerClient:
+    """Cliente del contenedor de una capa del lake (bronze, silver, gold). Uno por capa y proceso."""
     
-    nombre = os.environ["DATA_CONTAINER"]
+    nombre = os.environ[f"DATA_CONTAINER_{capa.upper()}"]
     cadena = os.environ.get("DATA_STORAGE_CONNECTION_STRING")
 
     if cadena:
