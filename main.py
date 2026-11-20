@@ -1,3 +1,4 @@
+import logging
 import sys
 import traceback
 import warnings
@@ -6,6 +7,7 @@ import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
+from src.conexion.blob import guardar_salida
 from src.utils.helpers import print_step, load_config
 from src.utils.exepciones import (
     GCCconexionError, GCCdesactualizadoError,
@@ -36,18 +38,20 @@ def main(fecha: str | None = None) -> None:
             print_step('[2/7] Creando base de exclusiones')
             vigentes= alternativas_vigentes(common_files["hist_alternativas"], cfg["params"]["procesos_alternativas"])
             common_files["exclusiones"] = tabla_exclusiones(vigentes=vigentes, perseverados=common_files["perseverados"])
+            guardar_salida(common_files["exclusiones"], "silver", "exclusiones", fecha)
+        else:
+            
+            print_step('[1/7] Validando actualización DW GCC')
+            val_gcc_actualizado(cfg['queries']['validacion_actualizacion'])
 
-        print_step('[1/7] Validando actualización DW GCC')
-        val_gcc_actualizado(cfg['queries']['validacion_actualizacion'])
-
-        print_step('[2/7] Extrayendo bases comunes')
-        common_files = extract_commons(
+            print_step('[2/7] Extrayendo bases comunes')
+            common_files = extract_commons(
             demo_path=cfg['queries']['demografica'],
             perfil_path=cfg['queries']['perfiles'],
             r10_sql_path=cfg['queries']['r10'],
             vista_path=cfg['queries']['vista360'],
             common_paths=cfg['common_paths'],
-        )
+            )
 
         # --- Se guardan los Outputs --- #
         
@@ -138,4 +142,6 @@ def main(fecha: str | None = None) -> None:
 
 if __name__ == '__main__':
     load_dotenv()
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    logging.getLogger("azure").setLevel(logging.WARNING)
     main(sys.argv[1] if len(sys.argv) > 1 else None)
