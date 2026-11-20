@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pandas as pd
 import yaml
-from azure.core.exceptions import ResourceNotFoundError
+from azure.core.exceptions import ResourceNotFoundError, AzureError
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import ContainerClient
 
@@ -25,6 +25,7 @@ from src.utils.exepciones import (
     CatalogoInvalidoError,
     InsumoNoEncontradoError,
     InsumosIncompletosError,
+    SalidaNoGuardadaError, 
 )
 
 logger = logging.getLogger(__name__)
@@ -160,8 +161,14 @@ def leer_fuente(
                 f"{fuente}: los datos no coinciden con los tipos de fuentes.yaml ({e})."
             ) from e
         
+        for col in df.columns:
+            if isinstance(df[col].dtype, pd.StringDtype):
+                df[col] = df[col].str.strip()
+            elif isinstance(df[col].dtype, pd.CategoricalDtype):
+                df[col] = df[col].astype("string").str.strip().astype("category")
+        
         logger.info(
-            "%s: %d filas %.1f en memoria",
+            "%s: %d filas %.1f MB en memoria",
             fuente, len(df), df.memory_usage(deep=True).sum() / 1024**2
         )
         return df
@@ -187,3 +194,27 @@ def validar_insumos(fecha: str, fuentes: list[str] | None = None) -> None:
         )
     
     logger.info("Insumos del %s completos (%d archivos)", fecha, len(esperados))
+    
+def guardar_salida(
+    df: pd.DataFrame,
+    capa: str, 
+    nombre: str, 
+    fecha: str,
+) -> str:
+    
+    """Escribe un DataFrame como parquet en alivio/{nombre}/fecha={fecha}/{nombre}.parquet.
+    Sobrescribe si ya existe: reprocesar una fecha reemplaza su salida"""
+    
+    ruta = f"alivio/{nombre}/fecha={fecha}/{nombre}.parquet"
+    datos = df.to_parquet(index=False)
+    try:
+        contenedor(capa).upload_blob(ruta, datos, overwrite=True)
+    except ResourceNotFoundError as e:
+        raise SalidaNoGuardadaError(
+            f"No existe el contenedor de la capa '{capa}'."
+        ) from e
+    except AzureError as e:
+        raise SalidaNoGuardadaError(f"No se pudo guardar {nombre} en {capa}/{ruta}: {e}") from e
+    
+    logger.info("%s guardado en %s/%s (%d filas)", nombre, capa, ruta, len(df))
+    return ruta 
