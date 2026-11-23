@@ -1,4 +1,7 @@
 import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 from src.utils.exepciones import EmptyDataFrameError
 
@@ -45,7 +48,7 @@ def build_ini_base(tbl_factura:pd.DataFrame) -> pd.DataFrame:
         )
     )
     
-    print(f'Registros iniciales Alivio MT: {int(alivio.shape[0])}')
+    logger.info("Registros iniciales Alivio MT %d", int(alivio.shape[0]))
     
     if alivio.empty:
         raise EmptyDataFrameError('No hay registros que cumplan condiciones iniciales.')
