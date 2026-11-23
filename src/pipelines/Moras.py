@@ -1,5 +1,6 @@
 import pandas as pd
 import logging
+from src.conexion.blob import guardar_salida
 from src.extraccion.Moras_tempranas import extract_MT
 from src.transformacion.Moras_tempranas import (
     filtrar_r10,create_fac_base,
@@ -9,7 +10,7 @@ from src.Model.Mt.build_df import (
     build_ini_base, demo_columns, cantidad_reactivaciones,
     perfil_asociado, final_matrix,
 )
-from src.Model.inferencia import predict, build_output, export
+from src.Model.inferencia import formatear_salida, predict, build_output
 from src.transformacion.alternativas import cedulas_excluidas
 
 logger = logging.getLogger(__name__)
@@ -43,10 +44,10 @@ def run_moras(cfg: dict, common_files: dict, fecha: str) -> dict[str,pd.DataFram
         (asociados con Prediccion == 1), lista para consolidar con los
         otros procesos.
     """
-    print('  → Extrayendo archivos MT...')
+    logger.info('Extrayendo fuentes de Moras Tempranas...')
     files = extract_MT(cfg, fecha)
     
-    print('  → Filtrando y cruzando población R10...')
+    logger.info('Filtrando y cruzando población R10...')
     r10 = filtrar_r10(common_files['r10'])
     excluidas = cedulas_excluidas(common_files["exclusiones"], cfg["exclusiones"]["moras"])
     antes = len(r10)
@@ -54,17 +55,20 @@ def run_moras(cfg: dict, common_files: dict, fecha: str) -> dict[str,pd.DataFram
     logger.info("Moras: %d excluidos por alivios previos (%d -> %d)", antes - len(r10), antes, len(r10))
     tbl_factura = create_fac_base(r10, files['fac'])
     tbl_factura = create_final_base(tbl_factura, cfg['columnas']['alivio_mt'])
+    guardar_salida(tbl_factura, "silver", "moras_poblacion", fecha)
 
-    print('  → Construyendo DataFrame de features...')
+    logger.info('Construyendo DataFrame de features...')    
     alivio = build_ini_base(tbl_factura)
     alivio = demo_columns(alivio, common_files['Demografica'], cfg['columnas']['demo_mt'])
     alivio = cantidad_reactivaciones(common_files['consol_inactivos'], alivio)
     alivio = perfil_asociado(common_files['Perfil'], alivio)
     x_feature, alivio = final_matrix(alivio, cfg['columnas']['mt_feature_order'])
 
-    print('  → Aplicando modelo de permanencia...')
+    logger.info('Aplicando modelo de permanencia...')
     etiquetas = predict(x_feature, cfg['artifacts_mt']['scaler'], cfg['artifacts_mt']['model'], cfg.get('threshold_mt'))
     df_scored, summary, base_inicial = build_output(tbl_factura, alivio, etiquetas, proceso='Mt')
-    base_oferta = export(df_scored, summary, base_inicial, proceso='Mt', out_path=cfg.get('out_path_mt', None))
-
-    return base_oferta
+    guardar_salida(df_scored, "silver", "moras_predicciones", fecha)
+    guardar_salida(base_inicial, "gold", "moras_ofertas", fecha)
+    guardar_salida(summary, "gold", "sum_predicciones_moras", fecha)
+    
+    return formatear_salida(base_inicial, proceso='Mt')
