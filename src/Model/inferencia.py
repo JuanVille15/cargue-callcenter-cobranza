@@ -1,10 +1,12 @@
 import pandas as pd
 import joblib
-import datetime
+import logging
 import typing
 from pathlib import Path
 
-from src.utils.exepciones import ErrorCargandoArterfacto, ErrorExportando
+from src.utils.exepciones import ErrorCargandoArterfacto
+
+logger = logging.getLogger(__name__)
 
 def predict(x_feature:pd.DataFrame, 
             scaler_path:str|None, 
@@ -53,15 +55,15 @@ def predict(x_feature:pd.DataFrame,
     try:
         with open(model_path, 'rb') as f:
             model = joblib.load(f)
-            print(f'Modelo:{Path(model_path).stem}\n'
-                  f'Correctamente Cargado')
+            logger.info('Modelo: %s\n'
+                         'Correctamente Cargado', Path(model_path).stem)
         if scaler_path:
             with open(scaler_path, 'rb') as f:
                 scaler = joblib.load(f)
-                print(f'Scaler:{Path(scaler_path).stem}\n'
-                  f'Correctamente Cargado')
+                logger.info('Scaler: %s\n'
+                            'Correctamente Cargado', Path(model_path).stem)
         else:
-            print('El modelo no requiere de Scaler')
+            logger.info('El modelo no requiere de Scaler')
     except FileNotFoundError as e:
         raise ErrorCargandoArterfacto(f'Artefacto no encontrado {e}') from e
     except Exception as e:
@@ -86,9 +88,12 @@ def predict(x_feature:pd.DataFrame,
             name= 'Prediccion'
         )
     
-    print(f'Predicción realizada\n'
-      f'Oferta: {(etiquetas == 1).sum()}\n'
-      f'Descartadas: {(etiquetas == 0).sum()}')
+    logger.info(
+        'Predicción realizada\n'
+        'Oferta: %d\n'
+        'Descartadas: %d',
+        (etiquetas == 1).sum(), (etiquetas == 0).sum(),
+    )
     
     return etiquetas
 
@@ -217,11 +222,10 @@ def build_output(base_inicial:pd.DataFrame,
 
     return df_scored, summary, base_inicial
 
-def export(df_scored:pd.DataFrame, 
-           summary:pd.DataFrame, 
-           base_inicial:pd.DataFrame, 
-           proceso:typing.Literal['Mt','Inactivos'], 
-           out_path:str|None=None) -> dict[str,pd.DataFrame]:
+def formatear_salida(
+    base_inicial:pd.DataFrame, 
+    proceso:typing.Literal['Mt','Inactivos'], 
+) -> dict[str,pd.DataFrame]:
     
     """
     Persiste los resultados del modelo en la capa Gold del proyecto y,
@@ -274,101 +278,7 @@ def export(df_scored:pd.DataFrame,
             f"proceso debe ser 'Mt' o 'Inactivos'. "
             f"Recibido: '{proceso}'"
         )
-
-    # --- Output Path --- #
     
-    BASE_PATH = Path(__file__).parents[2].resolve()
-    PERIOD = datetime.date.today().strftime('%Y%m')
-    IN_OUT_PATH = BASE_PATH / 'data' / 'output' / PERIOD / proceso
-    
-    if not IN_OUT_PATH.exists():
-        try:
-            print(
-                f'La carpeta: {IN_OUT_PATH} no existe...\n'
-                f'Creando carpeta en data/output/...'
-            )
-            IN_OUT_PATH.mkdir(
-                parents=True, 
-                exist_ok=True, 
-            )
-        except OSError as e:
-            raise ErrorExportando(f'No se pudo crear el directorio: {e}') from e
-    
-    # --- exportación --- #
-    SCORED_PATH = IN_OUT_PATH / 'predicciones.xlsx'
-    
-    try:
-        ## --- Se exporta internamente --- #
-        ### --- Se exportan 2 hojas para la predicciones --- #
-        print(f'Exportando predicciones: {PERIOD}')
-        with pd.ExcelWriter(
-            SCORED_PATH, 
-            engine='openpyxl',
-            mode='w', 
-        ) as f:
-            (
-                df_scored
-                .to_excel(
-                    excel_writer=f, 
-                    index=False, 
-                    sheet_name='BD', 
-                )
-            )
-            (
-                summary
-                .to_excel(
-                    excel_writer=f, 
-                    index=False, 
-                    sheet_name='Summary', 
-                )
-            )
-        print(f'Predicciones Exportadas')
-        
-        ### --- Se exporta la base de ofrecimiento --- ###
-        print(f'Exportando base ofrecimiento: {PERIOD}')
-        OFRECIMIENTO_PATH = IN_OUT_PATH / 'base_oferta.xlsx'
-        base_inicial.to_excel(
-            excel_writer=OFRECIMIENTO_PATH, 
-            index=False, 
-        )
-        print(f'Base ofrecimiento Exportada')
-        
-    except Exception as e:
-        raise ErrorExportando(f'Error escribiendo archivos: {e}') from e
-    
-    # --- Exportación a path externo --- #
-    
-    if out_path:
-        print(f'Exportando bases en path externo:{out_path}...')
-        
-        OUT_PATH_EXTERNO = Path(out_path) / PERIOD / proceso
-        
-        if not OUT_PATH_EXTERNO.exists():
-            try:
-                print(
-                    f'La carpeta: {out_path} no existe...\n'
-                    f'Creando carpeta...'
-                )
-                OUT_PATH_EXTERNO.mkdir(
-                    parents=True, 
-                    exist_ok=True, 
-                )
-            
-            except OSError as e:
-                raise ErrorExportando(f'No se pudo crear el directorio: {e}') from e
-        
-        ## --- Se exporta solamente la base_inicial --- ##
-        try:
-            print(f'Exportando base ofrecimiento: {PERIOD}')
-            OFRECIMIENTO_PATH = OUT_PATH_EXTERNO / 'base_oferta.xlsx'
-            base_inicial.to_excel(
-                excel_writer=OFRECIMIENTO_PATH, 
-                index=False, 
-            )
-            print(f'Base ofrecimiento Exportada')
-        except Exception as e:
-            raise ErrorExportando(f'Error escribiendo archivos: {e}') from e
-        
     if proceso == 'Mt':
         columnas_salida = ['ASO_IDENTIFICACION', 'NOMBRE_ASOCIADO', 'PORCENTAJE_CONDONACION']
         etiqueta = 'Moras'
