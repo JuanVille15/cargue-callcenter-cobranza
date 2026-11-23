@@ -1,6 +1,14 @@
+.git*
+.vscode
+.venv313
+.env
+local.settings.json
+insumos_locales.yaml
+data/
+docs/
+test/
+scripts/
+__pycache__/
 __blobstorage__/
 __queuestorage__/
 __azurite_db_*.json
-local.settings.json
-
-.venv313
