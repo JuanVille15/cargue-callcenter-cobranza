@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 from src.utils.helpers import print_step, load_config
 from src.extraccion.commons import extract_common_blob
-from src.pipelines import Moras
+from src.pipelines import Moras, Comunes
 from src.conexion.blob import guardar_salida, validar_insumos
 from src.transformacion.alternativas import tabla_exclusiones, alternativas_vigentes
 
@@ -17,9 +17,8 @@ if __name__ == "__main__":
     logging.getLogger("azure").setLevel(logging.WARNING)
     
     fecha, cfg = sys.argv[1], load_config()
-    validar_insumos(fecha)
     print_step('[1/3] Extrayendo bases comunes')
-    common_files = extract_common_blob(fecha=fecha, cfg=cfg)
+    common_files = Comunes.run_comunes(cfg=cfg, fecha=fecha)
     
     print_step('[2/3] Creando base de exclusiones')
     vigentes= alternativas_vigentes(common_files["hist_alternativas"], cfg["params"]["procesos_alternativas"])
