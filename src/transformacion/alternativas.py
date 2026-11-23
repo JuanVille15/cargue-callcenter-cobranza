@@ -12,9 +12,15 @@ def alternativas_vigentes(
     
     """Filtra historico alternativas: tabla de no aplica x alternativas"""
 
-    return (
-        hist.loc[hist["PROCESO_ORIGEN"].isin(procesos)]
-    )
+    vigentes = hist.loc[hist["PROCESO_ORIGEN"].isin(procesos)]
+    
+    if vigentes.empty:
+        raise ValueError(
+            f"Ninguna fila de GCC_HIST_ALTERNATIVAS tiene proceso de origen en {procesos}."
+            f"\nValores encontrados: {hist["PROCESO_ORIGEN"].unique().tolist()}"
+        )
+    
+    return vigentes
 
 def clasificar_motivo(vigentes: pd.DataFrame) -> pd.Series:
     """
