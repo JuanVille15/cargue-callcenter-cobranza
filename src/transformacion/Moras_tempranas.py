@@ -511,24 +511,4 @@ def create_final_base(tbl_factura:pd.DataFrame,
         columnas
     ]
     
-    BASE_PATH = Path(__file__).parents[2].resolve()
-    MONTH = datetime.date.today().strftime(format='%Y%m')
-    OUTP_PATH = BASE_PATH / 'data' / 'processed' / MONTH / 'AlivioMT'
-    
-    if not OUTP_PATH.exists():
-        print(f"El directorio: {OUTP_PATH} no existe")
-        print(f"Creando directorio:{OUTP_PATH}...")
-        OUTP_PATH.mkdir(parents=True, 
-                        exist_ok=True)
-        
-    try:
-        with pd.ExcelWriter(f'{OUTP_PATH}/{MONTH}.xlsx', 
-                        engine='openpyxl', 
-                        ) as file:
-            tbl_factura.to_excel(file, 
-                             index=False)
-        print(f'Archivo Inicial - {MONTH}.xlsx creado...')
-    except Exception as e:
-        raise exepciones.ExportacionAlivioMTError(f'Error Exportando: {OUTP_PATH.name} - {e}')
-    
     return tbl_factura
