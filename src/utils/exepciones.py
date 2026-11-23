@@ -69,3 +69,7 @@ class InsumoNoEncontradoError(Exception):
 class InsumosIncompletosError(Exception):
     "El insumo no tiene todos los campos"
     pass
+
+class SalidaNoGuardadaError(Exception):
+    "La salida no pudo ser guardada en Data lake"
+    pass
