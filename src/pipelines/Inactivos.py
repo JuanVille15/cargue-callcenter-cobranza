@@ -1,6 +1,6 @@
 import pandas as pd
 from src.extraccion.inactivos import extract_inactivos
-from src.Model.inferencia import predict, build_output, export
+from src.Model.inferencia import predict, build_output
 from src.transformacion.Inactivos import (
     unir_alivios, agr_cuotas_pagadas, cruce_general,
     build_final_base,
