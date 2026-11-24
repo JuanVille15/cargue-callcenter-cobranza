@@ -1,6 +1,8 @@
 # Catálogo de insumos en el lake.
-# - Claves y nombres de archivo en MAYÚSCULAS. El archivo debe coincidir EXACTAMENTE
-#   con el contrato con BI (Blob Storage distingue mayúsculas de minúsculas).
+# - Claves en MAYÚSCULAS. "archivo" va EXACTAMENTE como lo entrega BI
+#   (Blob Storage distingue mayúsculas de minúsculas).
+# - separador / decimal: formato del CSV (por defecto "," y "."). Las exportaciones
+#   de GCC y de la bodega salen con configuración regional en español: ";" y ",".
 # - Los nombres de COLUMNA van tal cual vienen en el archivo (no se normalizan).
 # - columnas: null   -> se leen todas.
 # - requerido: false -> validar_insumos no exige el archivo.
@@ -28,6 +30,8 @@ fuentes:
       ANTIGUEDAD_DEL_ASOCIADO_EN_COOMEVA: Int64
       NO_CUOTAS_CANCELADAS: Int64
       SUBCAMPANA: string
+    separador: ";"
+    decimal: ","
 
   STG_GCC_FACTURACION:
     archivo: STG_GCC_FACTURACION.csv
@@ -60,6 +64,8 @@ fuentes:
       FACT_CUOTA_PAGADA: Int64
       FACT_CUOTAS_PACTADAS: Int64
     fechas: [FACT_FECHA_CREA]
+    separador: ";"
+    decimal: ","
 
   GCC_ASOCIADO:
     archivo: GCC_ASOCIADO.csv
@@ -85,6 +91,8 @@ fuentes:
       ESTM_CODIGO: Int64
       ASO_SUBCAMPANNA_ASIGNADA: string
     fechas: [ASO_FECHA_CAMBIO_ESTADO_MULT]
+    separador: ";"
+    decimal: ","
 
   STG_GCC_SAC_INFOOBL:
     archivo: STG_GCC_SAC_INFOOBL.csv
@@ -118,6 +126,8 @@ fuentes:
       ESTADO_CREDITO: string
       TASA_INICIAL: float64
     fechas: [FEC_ACTUALIZACION, FEC_APERTURA, FEC_VENCIMIENTO]
+    separador: ";"
+    decimal: ","
 
   GCC_ESTADOS_MULTIACTIVA:
     archivo: GCC_ESTADOS_MULTIACTIVA.csv
@@ -126,6 +136,8 @@ fuentes:
       ESTM_CODIGO: Int64
       ESTM_NOMBRE: string
     requerido: True
+    separador: ";"
+    decimal: ","
 
   GCC_HIST_ALTERNATIVAS:
     archivo: GCC_HIST_ALTERNATIVAS.csv
@@ -141,19 +153,25 @@ fuentes:
       GCC_TIPO_ALFABETICO: string
       PROCESO_ORIGEN: string
     fechas: [FECHA_APLICACION]
+    separador: ";"
+    decimal: ","
 
   GCC_CORTE_FACTURACION:
     archivo: GCC_CORTE_FACTURACION.csv
     requerido: false
+    separador: ";"
+    decimal: ","
 
   GCC_CONCEPTO:
     archivo: GCC_CONCEPTO.csv
     requerido: false
+    separador: ";"
+    decimal: ","
 
   # ---------------- Bodega BI ----------------
 
-  V_DEMOGRAFICA:
-    archivo: V_DEMOGRAFICA.csv
+  V_DEMOGRAFICA:  
+    archivo: v_Demografica.csv
     columnas:
       - strIdentificacion
       - Estrato
@@ -166,9 +184,10 @@ fuentes:
       Ingresos: float64
       Saldoaportes: float64
       suma_productos: Int64
+    separador: ";"
 
   CONSULTAINTEGRAL360:
-    archivo: CONSULTAINTEGRAL360.csv
+    archivo: ConsultaIntegral360.csv
     columnas:
       - strIdentificacion
       - Fecha
@@ -197,22 +216,28 @@ fuentes:
       numCantidadProductos: Int64
       "Puntaje Acierta": float64
     fechas: [Fecha]
+    separador: ";"
+    decimal_coma: [SaldoAportes]
 
   V_SEGMENTOSPERFILESTRATEGICO:
-    archivo: V_SEGMENTOSPERFILESTRATEGICO.csv
+    archivo: V_SegmentosPerfilEstrategico.csv
     columnas: [strIdentificacion, strPerfil, strAgrupacionPerfil, dtmFechaInsercion]
     dtype:
       strIdentificacion: Int64
       strPerfil: category
       strAgrupacionPerfil: category
     fechas: [dtmFechaInsercion]
+    separador: ";"
+    decimal: ","
 
   FACTASOCIATIVIDAD:
-    archivo: FACTASOCIATIVIDAD.csv
+    archivo: factasociatividad.csv
     columnas: [ID, strcodestadoclientefuente]
     dtype:
       ID: Int64
       strcodestadoclientefuente: category
+    separador: ";"
+    decimal: ","
 
   # ---------------- Archivos planos ----------------
 

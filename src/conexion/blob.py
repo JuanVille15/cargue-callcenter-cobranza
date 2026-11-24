@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 RUTA_CATALOGO = Path(__file__).resolve().parents[2] / "config" / "fuentes.yaml"
 TIPOS_PERMITIDOS = {"Int64", "float64", "string", "category", "boolean"}
-CLAVES_PERMITIDAS = {"archivo", "columnas", "dtype", "fechas", "requerido"}
+CLAVES_PERMITIDAS = {"archivo", "columnas", "dtype", "fechas", "requerido", "separador", "decimal" ,"decimal_coma"}
 
 filtro = Callable[[pd.DataFrame], pd.DataFrame]
 
@@ -112,12 +112,11 @@ def contenedor(capa: str = "bronze") -> ContainerClient:
 
 def leer_fuente(
     fuente: str,
-    fecha:str,
+    fecha: str,
     columnas: list[str] | None = None,
     filtro: filtro | None = None,
-    chunksize: int = 250_000
+    chunksize: int = 250_000,
 ) -> pd.DataFrame:
-    
     """
     Lee una fuente del catálogo y la devuelve como DataFrame.
 
@@ -125,23 +124,31 @@ def leer_fuente(
     - filtro:   función DataFrame -> DataFrame. Si se pasa, el archivo se lee
                 por bloques de `chunksize` filas y solo se conserva lo filtrado.
 
+    El formato de cada archivo (separador, columnas con coma decimal) sale del catálogo.
     El blob se descarga a un archivo temporal (no a memoria) y se borra al terminar.
     """
-    
     spec = catalogo()["fuentes"][fuente]
     ruta = ruta_blob(fuente, fecha)
     usecols = columnas or spec.get("columnas")
-    
-    dtype = {c:t for c, t in (spec.get("dtype") or {}).items() if not usecols or c in usecols}
+    tipos = spec.get("dtype") or {}
+
+    # Solo se piden tipos, fechas y conversiones de las columnas que se van a leer.
+    coma = [c for c in (spec.get("decimal_coma") or []) if not usecols or c in usecols]
+    dtype = {
+        c: ("string" if c in coma else t)  # las de coma decimal se leen como texto y se convierten después
+        for c, t in tipos.items()
+        if not usecols or c in usecols
+    }
     fechas = [c for c in (spec.get("fechas") or []) if not usecols or c in usecols]
-    
+
     opciones = {
         "usecols": usecols,
         "dtype": dtype or None,
         "parse_dates": fechas or None,
-        "encoding":"utf-8",
+        "encoding": "utf-8",
+        "sep": spec.get("separador", ","),
     }
-    
+
     logger.info("Leyendo %s desde %s", fuente, ruta)
     with tempfile.NamedTemporaryFile(suffix=".csv", delete_on_close=False) as tmp:
         try:
@@ -149,29 +156,32 @@ def leer_fuente(
         except ResourceNotFoundError as e:
             raise InsumoNoEncontradoError(f"No existe el insumo '{fuente}' en {ruta}") from e
         tmp.close()
-        
+
         try:
             if filtro is None:
                 df = pd.read_csv(tmp.name, **opciones)
             else:
                 partes = [filtro(bloque) for bloque in pd.read_csv(tmp.name, chunksize=chunksize, **opciones)]
                 df = pd.concat(partes, ignore_index=True) if partes else pd.DataFrame(columns=usecols)
-        except (TypeError,ValueError, OverflowError) as e:
-            raise ValueError(
-                f"{fuente}: los datos no coinciden con los tipos de fuentes.yaml ({e})."
-            ) from e
-        
-        for col in df.columns:
-            if isinstance(df[col].dtype, pd.StringDtype):
-                df[col] = df[col].str.strip()
-            elif isinstance(df[col].dtype, pd.CategoricalDtype):
-                df[col] = df[col].astype("string").str.strip().astype("category")
-        
-        logger.info(
-            "%s: %d filas %.1f MB en memoria",
-            fuente, len(df), df.memory_usage(deep=True).sum() / 1024**2
-        )
-        return df
+
+            # Columnas que la fuente entrega con coma decimal ("7457781,81"), al tipo del catálogo.
+            for c in coma:
+                df[c] = pd.to_numeric(df[c].str.replace(",", ".", regex=False)).astype(tipos.get(c, "float64"))
+        except (TypeError, ValueError, OverflowError) as e:
+            raise ValueError(f"{fuente}: No coincide con fuentes.yaml ({e}).") from e
+
+    # Quitar espacios de relleno (columnas CHAR de Oracle): "Inactivos  " -> "Inactivos"
+    for col in df.columns:
+        if isinstance(df[col].dtype, pd.StringDtype):
+            df[col] = df[col].str.strip()
+        elif isinstance(df[col].dtype, pd.CategoricalDtype):
+            df[col] = df[col].astype("string").str.strip().astype("category")
+
+    logger.info(
+        "%s: %d filas, %.1f MB en memoria",
+        fuente, len(df), df.memory_usage(deep=True).sum() / 1024**2,
+    )
+    return df
     
 def validar_insumos(fecha: str, fuentes: list[str] | None = None) -> None:
     
