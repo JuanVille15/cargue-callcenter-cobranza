@@ -9,6 +9,8 @@ docs/
 test/
 scripts/
 __pycache__/
+**/__pycache__
+*.pyc
 __blobstorage__/
 __queuestorage__/
 __azurite_db_*.json
