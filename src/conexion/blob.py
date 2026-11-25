@@ -69,7 +69,7 @@ def _validar_catalogo(cat: dict) -> None:
 def catalogo() -> dict:
     """Lee y valida config/fuentes.yaml una sola vez
     por proceso"""
-    with open(RUTA_CATALOGO,encoding="utf-8") as f:
+    with open(RUTA_CATALOGO, encoding="utf-8") as f:
         cat = yaml.safe_load(f)
         _validar_catalogo(cat)
     
