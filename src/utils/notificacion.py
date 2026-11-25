@@ -3,7 +3,6 @@ import requests
 import datetime
 import os
 import json
-import win32com.client as win32
 from pathlib import Path
 from src.utils.exepciones import ErrorNotificacion
 
@@ -99,6 +98,7 @@ def _body(response:requests.Response) -> str:
     
 def enviar_notificacion(response:requests.Response) -> None:
     
+    import win32com.client as win32
     # --- Generamos los destinatarios --- #
     
     destinatarios = _destinatarios()
